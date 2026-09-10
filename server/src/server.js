@@ -1,5 +1,9 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import productRoutes from './routes/productRoutes.js';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,6 +18,9 @@ app.get('/api/health', (req, res) => {
     message: 'API is running'
   });
 });
+
+// Product routes for Day 2
+app.use('/api', productRoutes);
 
 // Start server
 app.listen(PORT, () => {
