@@ -12,7 +12,8 @@ export default function Home() {
         const response = await fetch('/api/products');
         if (response.ok) {
           const data = await response.json();
-          setFeaturedProducts(data.slice(0, 4));
+          const productList = Array.isArray(data) ? data : (data.products || []);
+          setFeaturedProducts(productList.slice(0, 4));
         }
       } catch (err) {
         console.error('Failed to fetch featured products:', err);

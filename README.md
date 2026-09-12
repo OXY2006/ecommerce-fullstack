@@ -22,7 +22,15 @@ A step-by-step full-stack e-commerce learning project built from scratch.
   * `GET /api/products` (Fetches all products with category names using SQL `JOIN`)
   * `GET /api/products/:id` (Fetches single product details using parameterized query `$1`)
 * Configured Vite development proxy in `client/vite.config.js` to route `/api` requests to backend port `5000`.
-* Connected React frontend to backend using native `fetch()` API with loading, error, and 404 states.
+### Day 3 — Search, Filtering, Sorting, & Server-Side Pagination
+* Implemented dynamic PostgreSQL querying via Express REST API for:
+  * **Product Search**: `GET /api/products?search=watch` (ILIKE search on `p.name`)
+  * **Category Filtering**: `GET /api/products?category=Electronics` (`JOIN categories` filtering)
+  * **Sorting Whitelist**: `GET /api/products?sort=price_asc` (`price_asc`, `price_desc`, `newest`)
+  * **Server-Side Pagination**: `GET /api/products?page=1&limit=6` (Calculates SQL `LIMIT` & `OFFSET` and returns filtered total count)
+* Created `GET /api/categories` endpoint for dynamic filter options.
+* Synchronized React frontend state with browser URL search parameters using React Router `useSearchParams()`.
+* Implemented automatic page reset (`page=1`) when search/filters change.
 
 ---
 
