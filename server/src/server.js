@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import productRoutes from './routes/productRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 dotenv.config();
 
@@ -19,8 +20,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Product routes for Day 2
+// Product routes for Day 2 & Day 3
 app.use('/api', productRoutes);
+
+// Authentication routes for Day 4
+app.use('/api/auth', authRoutes);
 
 // Start server
 app.listen(PORT, () => {

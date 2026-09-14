@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -8,7 +8,11 @@ export default function Register() {
     password: '',
     confirmPassword: ''
   });
-  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -17,9 +21,54 @@ export default function Register() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('Registration functionality will be implemented on Day 4!');
+    setError('');
+    setSuccess('');
+
+    // Frontend validation: Check that password and confirm password match
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || 'Registration failed.');
+        return;
+      }
+
+      setSuccess('Registration successful! Redirecting to login page...');
+      setTimeout(() => {
+        navigate('/login');
+      }, 1500);
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError('Unable to connect to the server. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -32,9 +81,15 @@ export default function Register() {
           </p>
         </div>
 
-        {message && (
-          <div className="bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs p-3 rounded text-center">
-            {message}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-md text-center font-medium">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs p-3 rounded-md text-center font-medium">
+            {success}
           </div>
         )}
 
@@ -101,9 +156,10 @@ export default function Register() {
 
           <button
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-md text-sm transition"
+            disabled={loading}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-medium py-2.5 rounded-md text-sm transition cursor-pointer"
           >
-            Register Account
+            {loading ? 'Creating Account...' : 'Register Account'}
           </button>
         </form>
 

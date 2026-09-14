@@ -32,6 +32,23 @@ A step-by-step full-stack e-commerce learning project built from scratch.
 * Synchronized React frontend state with browser URL search parameters using React Router `useSearchParams()`.
 * Implemented automatic page reset (`page=1`) when search/filters change.
 
+### Day 4 — User Authentication & Authorization
+* **Database Schema Update**: Added `users` table (`id`, `name`, `email`, `password`, `role`, `created_at`) with unique email constraint in `server/sql/schema.sql`.
+* **Password Hashing**: Secured user passwords with `bcryptjs` hashing (10 salt rounds) during registration; never store plaintext passwords.
+* **REST Authentication Endpoints**:
+  * `POST /api/auth/register`: Validates input, normalizes email, checks for duplicates, hashes password, inserts user into PostgreSQL, returns user profile (201 Created).
+  * `POST /api/auth/login`: Authenticates email and password using `bcrypt.compare`, signs JSON Web Token (JWT), and returns JWT + user info (200 OK). Returns generic 401 for bad credentials.
+  * `GET /api/auth/me`: Protected route returning authenticated user profile based on JWT verification.
+  * `GET /api/auth/admin-test`: Protected route requiring `admin` role authorization.
+* **JWT & Middleware**:
+  * Express `authenticateToken` middleware verifies `Authorization: Bearer <token>` header using `JWT_SECRET`.
+  * Express `requireAdmin` middleware enforces role-based access control (403 Forbidden for non-admin users).
+* **Frontend Authentication State**:
+  * Built lightweight React `AuthContext` to manage `user`, `token`, and `loading` state across the application.
+  * Persisted JWT in `localStorage` and automatically restored user sessions on page reload via `GET /api/auth/me`.
+  * Protected `/admin` frontend route using `<ProtectedRoute adminOnly={true}>`.
+  * Dynamic Navbar reflecting user authentication status, user name, role badge, and client-side logout functionality.
+
 ---
 
 ## Technology Stack
@@ -85,6 +102,7 @@ Copy `.env.example` to `.env` inside `server/` and update your PostgreSQL creden
 ```env
 DATABASE_URL="postgresql://USERNAME:PASSWORD@localhost:5432/ecommerce_db"
 PORT=5000
+JWT_SECRET="your_jwt_secret_key_here"
 ```
 
 ### 2. Set Up PostgreSQL Database

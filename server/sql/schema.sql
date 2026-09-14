@@ -1,14 +1,25 @@
 -- Drop tables if they exist to allow clean resets
 DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS users;
 
--- 1. Category Table
+-- 1. Users Table
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(50) NOT NULL DEFAULT 'user',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Category Table
 CREATE TABLE categories (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100) NOT NULL UNIQUE
 );
 
--- 2. Product Table
+-- 3. Product Table
 CREATE TABLE products (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,

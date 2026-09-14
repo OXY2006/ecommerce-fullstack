@@ -1,14 +1,52 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('Authentication functionality will be added on Day 4!');
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || 'Login failed. Please check your credentials.');
+        return;
+      }
+
+      // Store token and user data in context and localStorage
+      login(data.token, data.user);
+
+      // Redirect to Admin dashboard if admin, otherwise to Home
+      if (data.user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Unable to connect to the server. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -21,9 +59,9 @@ export default function Login() {
           </p>
         </div>
 
-        {message && (
-          <div className="bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs p-3 rounded text-center">
-            {message}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-md text-center font-medium">
+            {error}
           </div>
         )}
 
@@ -37,7 +75,7 @@ export default function Login() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="user@example.com"
+              placeholder="jane@example.com"
               className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -58,11 +96,18 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-md text-sm transition"
+            disabled={loading}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-medium py-2.5 rounded-md text-sm transition cursor-pointer"
           >
-            Log In
+            {loading ? 'Logging in...' : 'Log In'}
           </button>
         </form>
+
+        <div className="border-t border-slate-100 pt-4 text-xs text-slate-500 space-y-1">
+          <p className="font-semibold text-slate-700">Test Accounts:</p>
+          <p>👤 <strong>User:</strong> jane@example.com / user123</p>
+          <p>🔑 <strong>Admin:</strong> admin@example.com / admin123</p>
+        </div>
 
         <p className="text-center text-xs text-slate-500">
           Don't have an account?{' '}

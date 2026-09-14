@@ -1,3 +1,14 @@
+-- Insert Initial Test Users
+-- Note: Passwords stored here are bcrypt hashes, NOT plaintext!
+-- Test Admin Credentials: email="admin@example.com", password="admin123"
+-- Test User Credentials: email="jane@example.com", password="user123"
+INSERT INTO users (id, name, email, password, role) VALUES
+(1, 'Admin User', 'admin@example.com', '$2b$10$fFoF2gvjHK3YkMc83mcfWex0.Wx1tXnvuS2JcEMR.WXZO6JTFUJo2', 'admin'),
+(2, 'Jane Doe', 'jane@example.com', '$2b$10$Gv2LKPvRKtj8HdTB8sBTq.q/HMVmRgdELHuwRzOOANUfDCNcURtv6', 'user');
+
+-- Reset users sequence
+SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
+
 -- Insert Categories
 INSERT INTO categories (id, name) VALUES
 (1, 'Electronics'),
