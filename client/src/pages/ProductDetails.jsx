@@ -1,11 +1,20 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function ProductDetails() {
   const { id } = useParams();
+  const { user, token } = useAuth();
+  const navigate = useNavigate();
+
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Cart interaction state
+  const [quantity, setQuantity] = useState(1);
+  const [adding, setAdding] = useState(false);
+  const [feedback, setFeedback] = useState(null); // { type: 'success' | 'error', message: string }
 
   useEffect(() => {
     async function fetchProductDetails() {
@@ -36,6 +45,52 @@ export default function ProductDetails() {
 
     fetchProductDetails();
   }, [id]);
+
+  // Handle Add to Cart submission
+  const handleAddToCart = async () => {
+    if (!user || !token) {
+      navigate('/login');
+      return;
+    }
+
+    if (!product || product.stock <= 0) return;
+
+    try {
+      setAdding(true);
+      setFeedback(null);
+
+      const response = await fetch('/api/cart/items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: quantity
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to add product to cart.');
+      }
+
+      setFeedback({
+        type: 'success',
+        message: `Successfully added ${quantity} unit(s) of "${product.name}" to your cart!`
+      });
+    } catch (err) {
+      console.error('Error adding to cart from details page:', err);
+      setFeedback({
+        type: 'error',
+        message: err.message
+      });
+    } finally {
+      setAdding(false);
+    }
+  };
 
   return (
     <div className="py-6 space-y-6">
@@ -130,13 +185,67 @@ export default function ProductDetails() {
                 </span>
               </div>
 
-              {/* Disabled Add to Cart placeholder button */}
-              <button
-                disabled
-                className="w-full bg-slate-300 text-slate-500 cursor-not-allowed font-medium py-3 px-4 rounded text-center transition"
-              >
-                Add to Cart (Coming on Day 5)
-              </button>
+              {/* Feedback Alert */}
+              {feedback && (
+                <div
+                  className={`p-3 rounded-lg text-xs font-medium flex items-center justify-between ${
+                    feedback.type === 'success'
+                      ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+                      : 'bg-red-50 border border-red-200 text-red-800'
+                  }`}
+                >
+                  <span>{feedback.message}</span>
+                  <button
+                    onClick={() => setFeedback(null)}
+                    className="font-bold ml-2 underline cursor-pointer"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
+
+              {/* Quantity Selector & Add to Cart Controls */}
+              {product.stock > 0 ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-slate-700">Quantity:</span>
+                    <div className="flex items-center border border-slate-300 rounded-lg bg-slate-50">
+                      <button
+                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                        disabled={quantity <= 1 || adding}
+                        className="px-3 py-1.5 text-slate-700 hover:bg-slate-200 disabled:opacity-40 font-bold transition rounded-l-lg cursor-pointer"
+                      >
+                        -
+                      </button>
+                      <span className="px-4 py-1.5 font-bold text-slate-900 text-sm">
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
+                        disabled={quantity >= product.stock || adding}
+                        className="px-3 py-1.5 text-slate-700 hover:bg-slate-200 disabled:opacity-40 font-bold transition rounded-r-lg cursor-pointer"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={adding}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg text-center transition shadow cursor-pointer disabled:opacity-50"
+                  >
+                    {adding ? 'Adding to Cart...' : 'Add to Cart'}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  disabled
+                  className="w-full bg-slate-300 text-slate-500 font-medium py-3 px-4 rounded-lg cursor-not-allowed text-center"
+                >
+                  Out of Stock
+                </button>
+              )}
             </div>
           </div>
         </div>

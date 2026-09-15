@@ -49,6 +49,18 @@ A step-by-step full-stack e-commerce learning project built from scratch.
   * Protected `/admin` frontend route using `<ProtectedRoute adminOnly={true}>`.
   * Dynamic Navbar reflecting user authentication status, user name, role badge, and client-side logout functionality.
 
+### Day 5 — Persistent Shopping Cart
+* **Database Design**: Added `carts` (1-to-1 with `users`) and `cart_items` tables with foreign key `ON DELETE CASCADE` and `UNIQUE(cart_id, product_id)` constraint in `server/sql/schema.sql`.
+* **Cart Creation & Laziness**: Implemented lazy cart initialization on backend via `getOrCreateCart(userId)`.
+* **REST Cart API Endpoints**:
+  * `GET /api/cart`: Fetches authenticated user's cart items with SQL `JOIN` on products and server-calculated subtotals and totals.
+  * `POST /api/cart/items`: Adds item to cart or increments quantity via PostgreSQL `ON CONFLICT` UPSERT. Validates quantity and available product stock.
+  * `PATCH /api/cart/items/:id`: Updates item quantity while enforcing user ownership and stock limits.
+  * `DELETE /api/cart/items/:id`: Removes single cart item owned by current user.
+  * `DELETE /api/cart`: Clears all cart items for authenticated user while leaving cart table row intact.
+* **Cart Ownership & Security**: User identity derived strictly from JWT (`req.user.id`). Frontend never passes `user_id`. Prices and totals are computed on backend.
+* **Frontend Integration**: Built responsive Cart page (`Cart.jsx`), quantity controls, item removal, clear cart, unauthenticated login redirect, loading/error states, and Add to Cart buttons on Product Cards and Details page.
+
 ---
 
 ## Technology Stack
