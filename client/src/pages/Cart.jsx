@@ -380,12 +380,12 @@ export default function Cart() {
               Calculated on backend from PostgreSQL database prices.
             </p>
 
-            <button
-              disabled
-              className="w-full sm:w-auto mt-2 bg-slate-300 text-slate-500 font-medium px-6 py-2.5 rounded-lg text-sm cursor-not-allowed text-center"
+            <Link
+              to="/checkout"
+              className="w-full sm:w-auto mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2.5 rounded-lg text-sm transition text-center shadow"
             >
-              Checkout (Coming on Day 6)
-            </button>
+              Proceed to Checkout &rarr;
+            </Link>
           </div>
         </div>
       </div>

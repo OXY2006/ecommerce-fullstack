@@ -61,6 +61,23 @@ A step-by-step full-stack e-commerce learning project built from scratch.
 * **Cart Ownership & Security**: User identity derived strictly from JWT (`req.user.id`). Frontend never passes `user_id`. Prices and totals are computed on backend.
 * **Frontend Integration**: Built responsive Cart page (`Cart.jsx`), quantity controls, item removal, clear cart, unauthenticated login redirect, loading/error states, and Add to Cart buttons on Product Cards and Details page.
 
+### Day 6 — Checkout & Order Creation Flow
+* **Database Design**: Added `orders` (`user_id`, `total_amount`, `status`, shipping fields) and `order_items` (`order_id`, `product_id`, `product_name`, `price`, `quantity`, `subtotal`) tables to `server/sql/schema.sql`.
+* **Cart vs. Order Separation**: Cart represents dynamic temporary state; Order represents immutable historical purchase records.
+* **Price Snapshotting**: `order_items.price` and `order_items.product_name` snapshot item details at time of checkout so future product price changes or deletion do not affect historical orders.
+* **PostgreSQL Database Transactions**: Implemented atomic transaction via `pool.connect()` using `BEGIN`, `COMMIT`, and `ROLLBACK` for order creation endpoint `POST /api/orders`.
+* **Server-Side Order Calculation & Stock Validation**:
+  1. Authenticates JWT (`req.user.id`).
+  2. Validates all shipping address fields.
+  3. Verifies cart is non-empty.
+  4. Verifies product stock availability (`quantity <= stock`).
+  5. Computes order total and subtotals strictly on the backend.
+  6. Inserts `orders` and `order_items` records.
+  7. Decreases product stock (`stock = stock - quantity`).
+  8. Clears user's cart items while retaining cart table record.
+  9. Commits transaction or rolls back atomically on failure.
+* **Frontend Checkout Flow**: Built protected Checkout page (`Checkout.jsx`) with shipping form and order summary, and Order Success confirmation page (`OrderSuccess.jsx`).
+
 ---
 
 ## Technology Stack
